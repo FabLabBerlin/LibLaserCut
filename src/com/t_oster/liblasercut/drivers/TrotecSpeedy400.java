@@ -232,20 +232,17 @@ public class TrotecSpeedy400 extends LaserCutter {
 
   private void setSpeed(PrintStream out, int speedInPercent) {
     if (speedInPercent != currentSpeed) {
-      // out.printf(Locale.US, "G1 F%i\n", (int) ((double) speedInPercent * this.getLaserRate() / 100));
       currentSpeed = speedInPercent;
     }
-out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
+    out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
   }
 
   
   private int power = 2000;
   private void setPower(PrintStream out, int powerInPercent) {
     if (powerInPercent != currentPower) {
-      // out.printf(Locale.US, "S%i\n", (int) (255d * powerInPercent / 100));
       currentPower = powerInPercent;
     }
-    //LF7500\nLP5000
     out.printf(Locale.US, "LP%d\n", (int)100d*powerInPercent);
   }
   
@@ -253,7 +250,6 @@ out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
   
   private void setFrequency(PrintStream out, int frequency) {
     this.frequency = frequency;
-    //LF7500\nLP5000
     out.printf(Locale.US, "LF%d\n", (int)frequency);
   }
 
@@ -263,12 +259,8 @@ out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
   private boolean isMoving = false;
   
   private void move(PrintStream out, int x, int y, double resolution) {
-    //double hw_scale = this.getHwDPI()/resolution;
-    double hw_scale = 5.097;
-    //hw_x = (int)(hw_scale * (isFlipXaxis() ? Util.mm2px(this.bedWidth, resolution) - y : y));
-    //hw_y = (int)(hw_scale * (isFlipYaxis() ? 1000-x : x));
-    
-    // XXX: Add velocity optimizatio out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
+    double hw_scale = 5.097; // Please verify this
+
     hw_x = ((int)(hw_scale * (x)))+this.safety_margin_x;
     hw_y = ((int)(hw_scale * (y)))+this.safety_margin_y;
     
@@ -282,17 +274,16 @@ out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
        out.printf(Locale.US, "EC\n");
        isCutting = false;
     }
+    
     out.printf(Locale.US, "GQ\nPU\nPA%d,%d\n", hw_x, hw_y);
-    steps++;
   }
 
   private void line(PrintStream out, int x, int y, double resolution) {
     //double hw_scale = this.getHwDPI()/resolution;
     double hw_scale = 5.097;
-   hw_x = ((int)(hw_scale * (x)))+this.safety_margin_x;
+    hw_x = ((int)(hw_scale * (x)))+this.safety_margin_x;
     hw_y = ((int)(hw_scale * (y)))+this.safety_margin_y;
-    //out.printf(Locale.US, "PD%d,%d;", hw_x, hw_y);
-    
+  
     if(isMoving)
     {
        out.printf(Locale.US, "EC\n");
@@ -306,7 +297,6 @@ out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
     }
     
     out.printf(Locale.US, "GQ\nPA%d,%d\n", hw_x, hw_y);
-    steps++;
   }
 
   private byte[] generatePseudoRaster3dGCode(Raster3dPart rp, double resolution) throws UnsupportedEncodingException {
@@ -380,11 +370,11 @@ out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
     PrintStream out = new PrintStream(result, true, "US-ASCII");
     boolean dirRight = true;
     Point rasterStart = rp.getRasterStart();
-    // XXX
+
     PowerSpeedFocusProperty prop = (PowerSpeedFocusProperty) rp.getLaserProperty();
     setSpeed(out, (int)prop.getSpeed());
     setPower(out, (int)prop.getPower());
-    //setFrequency(out, (int)prop.getFrequency());
+
     for (int line = 0; line < rp.getRasterHeight(); line++) {
       Point lineStart = rasterStart.clone();
       lineStart.y += line;
@@ -465,14 +455,11 @@ out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
     ByteArrayOutputStream result = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(result, true, "US-ASCII");
 
-    // XXX: LF7500\nLP5000
     out.printf(Locale.US,"ED3\nED4\nAP\nLC0\nVL950000\nAV2\nCA1500\nCM\nEC\nVS200000\n");
     if(this.useAF.equals("yes"))
     {
       out.printf("WA2000\nAF\nWA5000\n");
     }
-
-//out.flush();
     
     return result.toByteArray();
   }
@@ -482,9 +469,6 @@ out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
     PrintStream out = new PrintStream(result, true, "US-ASCII");
     
     out.printf(Locale.US,"PU\nVS200000\nPA0,0\nWA10000\nEO3\nEO4\nEC\n");
-    //out.printf(Locale.US, "PU%d,%d;", this.hw_y, this.hw_x);
-    //back to origin and shutdown
-    //out.print(this.finiString);
     return result.toByteArray();
   }
 
@@ -504,10 +488,7 @@ out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
     pl.taskChanged(this, "connecting");
     if (this.getComPort().startsWith("file://"))
     {
-      //out = new BufferedOutputStream(new FileOutputStream(fd = new File(new URI(this.getComPort()))));
-      //in = new BufferedInputStream(new FileInputStream(fd));
-	out = new BufferedOutputStream(new FileOutputStream(new File(new URI(this.getComPort()))));
-  // BLA
+        out = new BufferedOutputStream(new FileOutputStream(new File(new URI(this.getComPort()))));
     }
     else
     {
@@ -567,15 +548,10 @@ out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
       }
       else if (p instanceof VectorPart)
       {
-        // FOOBAR
         byte[] buf = this.generateVectorGCode((VectorPart) p, p.getDPI());
         String hpglcode = new String(buf);
-         //    System.out.println(hpglcode);
-        
         String lines[] = hpglcode.split("\\r?\\n");
 
-    
-         System.out.printf("Count is %d\n", lines.length);
         out.write(this.generateVectorGCode((VectorPart) p, p.getDPI()));
       }
       i++;
