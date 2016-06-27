@@ -50,7 +50,9 @@ public class LibInfo
       GenericGcodeDriver.class,
       Grbl.class,
       SmoothieBoard.class,
-      Marlin.class
+      Marlin.class,
+      TrotecSpeedy400TCP,
+      TrotecSpeedy400
     };
   }
 }
