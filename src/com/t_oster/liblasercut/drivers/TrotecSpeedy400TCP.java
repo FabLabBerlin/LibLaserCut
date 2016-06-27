@@ -250,10 +250,8 @@ public class TrotecSpeedy400TCP extends LaserCutter {
   private int power = 2000;
   private void setPower(PrintStream out, int powerInPercent) {
     if (powerInPercent != currentPower) {
-      // out.printf(Locale.US, "S%i\n", (int) (255d * powerInPercent / 100));
       currentPower = powerInPercent;
     }
-    //LF7500\nLP5000
     out.printf(Locale.US, "LP%d\n", (int)100d*powerInPercent);
   }
   
@@ -261,7 +259,6 @@ public class TrotecSpeedy400TCP extends LaserCutter {
   
   private void setFrequency(PrintStream out, int frequency) {
     this.frequency = frequency;
-    //LF7500\nLP5000
     out.printf(Locale.US, "LF%d\n", (int)frequency);
   }
 
@@ -271,12 +268,8 @@ public class TrotecSpeedy400TCP extends LaserCutter {
   private boolean isMoving = false;
   
   private void move(PrintStream out, int x, int y, double resolution) {
-    //double hw_scale = this.getHwDPI()/resolution;
-    double hw_scale = 5.097;
-    //hw_x = (int)(hw_scale * (isFlipXaxis() ? Util.mm2px(this.bedWidth, resolution) - y : y));
-    //hw_y = (int)(hw_scale * (isFlipYaxis() ? 1000-x : x));
-    
-    // XXX: Add velocity optimizatio out.printf(Locale.US, "VS%d\n", (int)2000d*speedInPercent);
+    double hw_scale = 5.097; // Please verify this
+
     hw_x = ((int)(hw_scale * (x)))+this.safety_margin_x;
     hw_y = ((int)(hw_scale * (y)))+this.safety_margin_y;
     
@@ -295,11 +288,9 @@ public class TrotecSpeedy400TCP extends LaserCutter {
   }
 
   private void line(PrintStream out, int x, int y, double resolution) {
-    //double hw_scale = this.getHwDPI()/resolution;
     double hw_scale = 5.097;
-   hw_x = ((int)(hw_scale * (x)))+this.safety_margin_x;
+    hw_x = ((int)(hw_scale * (x)))+this.safety_margin_x;
     hw_y = ((int)(hw_scale * (y)))+this.safety_margin_y;
-    //out.printf(Locale.US, "PD%d,%d;", hw_x, hw_y);
     
     if(isMoving)
     {
@@ -473,14 +464,11 @@ public class TrotecSpeedy400TCP extends LaserCutter {
     ByteArrayOutputStream result = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(result, true, "US-ASCII");
 
-    // XXX: LF7500\nLP5000
     out.printf(Locale.US,"ED3\nED4\nAP\nLC0\nVL950000\nAV2\nCA1500\nCM\nEC\nVS200000\n");
     if(this.useAF.equals("yes"))
     {
       out.printf("WA2000\nAF\nWA5000\n");
     }
-
-//out.flush();
     
     return result.toByteArray();
   }
@@ -490,9 +478,6 @@ public class TrotecSpeedy400TCP extends LaserCutter {
     PrintStream out = new PrintStream(result, true, "US-ASCII");
     
     out.printf(Locale.US,"PU\nVS200000\nPA0,0\nWA10000\nEO3\nEO4\nEC\n");
-    //out.printf(Locale.US, "PU%d,%d;", this.hw_y, this.hw_x);
-    //back to origin and shutdown
-    //out.print(this.finiString);
     return result.toByteArray();
   }
 
@@ -501,10 +486,8 @@ public class TrotecSpeedy400TCP extends LaserCutter {
     pl.progressChanged(this, 0);
     this.currentPower = -1;
     this.currentSpeed = -1;
-    //BufferedOutputStream out;
-    //BufferedInputStream in;
     
-     ByteArrayOutputStream result = new ByteArrayOutputStream();
+    ByteArrayOutputStream result = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(result, true, "US-ASCII");
     
     PrintStream tcp = new PrintStream(result, true, "US-ASCII");
@@ -515,19 +498,13 @@ public class TrotecSpeedy400TCP extends LaserCutter {
     checkJob(job);
     job.applyStartPoint();
     pl.taskChanged(this, "connecting");
-    
-  // XXX
+   
   JSONObject json = new JSONObject();    
   connection.connect(new InetSocketAddress(hostname, 9000), 3000);
   
   json.put("name", job.getName());
   
   tcp = new PrintStream(connection.getOutputStream(), true, "US-ASCII");
-  
-
-  
-	//out = new BufferedOutputStream(connection.getOutputStream());
-  //in = new BufferedInputStream(connection.getInputStream());
 	pl.taskChanged(this, "sending");
   
 
@@ -535,8 +512,6 @@ public class TrotecSpeedy400TCP extends LaserCutter {
     byte[] tmp = this.generateInitializationCode();
     String tmp2 = new String(tmp);
 
-        
-    //json.put("init", tmp2.split("\\r?\\n"));
     tcp.println(tmp2);
     pl.progressChanged(this, 20);
     int i = 0;
@@ -554,17 +529,11 @@ public class TrotecSpeedy400TCP extends LaserCutter {
       }
       else if (p instanceof VectorPart)
       {
-        // FOOBAR
         byte[] buf = this.generateVectorGCode((VectorPart) p, p.getDPI());
         String hpglcode = new String(buf);
         tcp.println(hpglcode);
         
         String lines[] = hpglcode.split("\\r?\\n");
-
-    
-        
-        //json.put("data", hpglcode.split("\\r?\\n"));
-        //; (this.generateVectorGCode((VectorPart) p, p.getDPI()));
       }
       i++;
       pl.progressChanged(this, 20 + (int) (i*(double) 60/max));
@@ -580,10 +549,6 @@ public class TrotecSpeedy400TCP extends LaserCutter {
       connection.close();
     }
     pl.taskChanged(this, "sent with %d lines " + this.steps);
-    
-      //String jsonString = json.toString();
-  
-
 
     pl.progressChanged(this, 100);
   }
@@ -593,11 +558,6 @@ public class TrotecSpeedy400TCP extends LaserCutter {
   public List<Double> getResolutions() {
     if (resolutions == null) {
       resolutions = Arrays.asList(new Double[]{
-                125d,
-                250d,
-                333d,
-                500d,
-                600d,
                 1000d
               });
     }
