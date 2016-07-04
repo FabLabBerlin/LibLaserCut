@@ -51,8 +51,8 @@ public class LibInfo
       Grbl.class,
       SmoothieBoard.class,
       Marlin.class,
-      TrotecSpeedy400TCP,
-      TrotecSpeedy400
+      TrotecSpeedy400TCP.class,
+      TrotecSpeedy400.class
     };
   }
 }
